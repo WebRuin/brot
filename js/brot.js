@@ -1,7 +1,7 @@
 /* Julian Raya 2013*/
 
-var doc = document;
-var win = window;
+const doc = document;
+const win = window;
 
 var xtnd = function xtnd() {
   for (var i = 1; i < arguments.length; i++) {
@@ -13,7 +13,6 @@ var xtnd = function xtnd() {
   }
   return arguments[0];
 };
-
 
 function BrotCtrl() {
   this.elems = {};
@@ -27,37 +26,37 @@ function BrotCtrl() {
 }
 
 xtnd(BrotCtrl.prototype, {
-  Z: function () {
-    return parseInt(this.elems.z.value)
+  Z: function() {
+    return parseInt(this.elems.z.value);
   },
-  X: function () {
-    return parseFloat(this.elems.x.value)
+  X: function() {
+    return parseFloat(this.elems.x.value);
   },
-  Y: function () {
-    return parseFloat(this.elems.y.value)
+  Y: function() {
+    return parseFloat(this.elems.y.value);
   },
-  I: function () {
-    return parseInt(this.elems.i.value)
+  I: function() {
+    return parseInt(this.elems.i.value);
   },
-  T: function () {
-    return parseInt(this.elems.t.value)
+  T: function() {
+    return parseInt(this.elems.t.value);
   },
 
-  dsbl: function () {
+  dsbl: function() {
     for (var key in this.elems) {
       if (this.elems.hasOwnProperty(key)) {
         this.elems[key].setAttribute('disabled', 'disabled');
       }
     }
   },
-  enbl: function () {
+  enbl: function() {
     for (var key in this.elems) {
       if (this.elems.hasOwnProperty(key)) {
         this.elems[key].removeAttribute('disabled');
       }
     }
   },
-  setSteps: function () {
+  setSteps: function() {
     var zoom = this.Z();
     var cStep = 0.5 / zoom;
     var zStep = Math.abs(Math.ceil(zoom / 10) || 1);
@@ -68,21 +67,20 @@ xtnd(BrotCtrl.prototype, {
     }
 
     this.elems.z.setAttribute('step', zStep + '');
-
   },
-  setEvents: function () {
+  setEvents: function() {
     for (var key in this.elems) {
       if (this.elems.hasOwnProperty(key)) {
-        this.elems[key].addEventListener('change', function () {
+        this.elems[key].addEventListener('change', function() {
           win.brot.update();
         });
       }
     }
 
-    var Key = {UP: 38, RIGHT: 39, DOWN: 40, LEFT: 37};
+    var Key = { UP: 38, RIGHT: 39, DOWN: 40, LEFT: 37 };
 
     var ctrl = this;
-    win.addEventListener('keydown', function (e) {
+    win.addEventListener('keydown', function(e) {
       if (e.ctrlKey || e.shiftKey) {
         switch (e.keyCode) {
           case Key.UP:
@@ -115,16 +113,14 @@ xtnd(BrotCtrl.prototype, {
         }
       }
 
-      if (([37, 38, 39, 40]).indexOf(e.keyCode) != -1) {
+      if ([37, 38, 39, 40].indexOf(e.keyCode) != -1) {
         this.brot.update();
       }
-
     });
   }
 });
 
 function BrotPanel(width, height, cyMin, cyMax, cxMin, cxMax, maxI) {
-
   this.settings = {
     width: Math.ceil(width),
     height: height,
@@ -140,7 +136,7 @@ function BrotPanel(width, height, cyMin, cyMax, cxMin, cxMax, maxI) {
   this.worker = new Worker('js/calc.js');
 
   var panel = this;
-  this.worker.onmessage = function (e) {
+  this.worker.onmessage = function(e) {
     panel.cvs.width = width;
     panel.cvs.height = height;
     panel.ctx.putImageData(e.data.imgData, 0, 0);
@@ -149,14 +145,15 @@ function BrotPanel(width, height, cyMin, cyMax, cxMin, cxMax, maxI) {
 }
 
 xtnd(BrotPanel.prototype, {
-  work: function () {
-    this.settings.imgData = this.ctx.createImageData(this.settings.width, this.settings.height);
+  work: function() {
+    this.settings.imgData = this.ctx.createImageData(
+      this.settings.width,
+      this.settings.height
+    );
     this.worker.postMessage(this.settings);
   },
-  onFree: function () {
-  }
+  onFree: function() {}
 });
-
 
 function Brot() {
   this.panels = [];
@@ -165,7 +162,6 @@ function Brot() {
   this.cy = {};
   this.ctrl = new BrotCtrl();
   this.ctrl.brot = this;
-
 }
 
 xtnd(Brot.prototype, {
@@ -174,32 +170,39 @@ xtnd(Brot.prototype, {
   maxI: 200,
   numWorkers: 6,
   working: false,
-  cxCy: function () {
+  cxCy: function() {
     var offY = this.ctrl.Y();
     var offX = this.ctrl.X();
     var zoom = this.ctrl.Z();
-    this.cx.min = ((-2.0 * (this.width / this.height)) / zoom) - offX;
-    this.cx.max = ((2.0 * (this.width / this.height)) / zoom) - offX;
+    this.cx.min = (-2.0 * (this.width / this.height)) / zoom - offX;
+    this.cx.max = (2.0 * (this.width / this.height)) / zoom - offX;
     this.cx.step = (this.cx.max - this.cx.min) / this.numWorkers;
-    this.cy.min = (-2.0 / zoom) - offY,
-        this.cy.max = (2.0 / zoom) - offY
+    (this.cy.min = -2.0 / zoom - offY), (this.cy.max = 2.0 / zoom - offY);
   },
-  init: function (contentDiv) {
+  init: function(contentDiv) {
     this.cxCy();
     for (var i = 0; i < this.numWorkers; i++) {
-      var thisCxMin = this.cx.min + (this.cx.step * i);
+      var thisCxMin = this.cx.min + this.cx.step * i;
       var thisCxMax = thisCxMin + this.cx.step;
 
-      var panel = this.panels[i] = new BrotPanel(this.panelWidth, this.height, this.cy.min, this.cy.max, thisCxMin, thisCxMax, this.maxI);
+      var panel = (this.panels[i] = new BrotPanel(
+        this.panelWidth,
+        this.height,
+        this.cy.min,
+        this.cy.max,
+        thisCxMin,
+        thisCxMax,
+        this.maxI
+      ));
       panel.work();
-      panel.cvs.style.left = (i * this.panelWidth) + 'px';
+      panel.cvs.style.left = i * this.panelWidth + 'px';
       contentDiv.appendChild(panel.cvs);
     }
 
     this.ctrl.setEvents();
     this.update();
   },
-  update: function () {
+  update: function() {
     if (!this.working) {
       var numFree = 0;
       var rendStart = Date.now();
@@ -213,17 +216,17 @@ xtnd(Brot.prototype, {
 
       for (var i = 0; i < this.panels.length; i++) {
         var panel = this.panels[i];
-        panel.settings.cxMin = this.cx.min + (this.cx.step * i);
+        panel.settings.cxMin = this.cx.min + this.cx.step * i;
         panel.settings.cxMax = panel.settings.cxMin + this.cx.step;
         panel.settings.cyMin = this.cy.min;
         panel.settings.cyMax = this.cy.max;
         panel.settings.maxI = this.ctrl.I();
         panel.settings.zoom = this.ctrl.Z();
 
-        panel.onFree = function () {
+        panel.onFree = function() {
           if (++numFree == b.panels.length) {
             b.ctrl.enbl();
-            b.ctrl.elems.t.innerText = (Date.now() - rendStart) + 'ms';
+            b.ctrl.elems.t.innerText = Date.now() - rendStart + 'ms';
             b.working = false;
           }
         };
