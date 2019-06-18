@@ -1,18 +1,19 @@
-self.onmessage = e => {
-  var brot = e.data;
-  var pixelH = (brot.cyMax - brot.cyMin) / brot.height;
-  var pixelW = (brot.cxMax - brot.cxMin) / brot.width;
-  var gy, gx;
-  for (var y = 0; y < brot.height; y++) {
+self.onmessage = ({ data }) => {
+  const brot = data;
+  const pixelH = (brot.cyMax - brot.cyMin) / brot.height;
+  const pixelW = (brot.cxMax - brot.cxMin) / brot.width;
+  let gy;
+  let gx;
+  for (let y = 0; y < brot.height; y++) {
     gy = brot.cyMin + y * pixelH;
-    for (var x = 0; x < brot.width; x++) {
+    for (let x = 0; x < brot.width; x++) {
       gx = brot.cxMin + x * pixelW;
 
-      let i = 0,
-        zx = 0.0,
-        zy = 0.0,
-        zx2 = 0.0,
-        zy2 = 0.0;
+      let i = 0;
+      let zx = 0.0;
+      let zy = 0.0;
+      let zx2 = 0.0;
+      let zy2 = 0.0;
       for (; i < brot.maxI && zx2 + zy2 < 4; i++) {
         zy = 2 * zx * zy + gy;
         zx = zx2 - zy2 + gx;
@@ -47,7 +48,7 @@ self.onerror = message => {
 const log = msg => {
   const object = {
     type: 'debug',
-    msg: msg + ' [' + Date.now() + ']'
+    msg: `${msg} [${Date.now()}]`
   };
   self.postMessage(object);
 };
